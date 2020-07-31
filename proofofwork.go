@@ -20,8 +20,7 @@ func NewProoOffWork(block *Block) *ProofOfWork {
 		block: block,
 	}
 
-	targetStr := "00001/" +
-		"000000000000000000000000000" +
+	targetStr := "00001000000000000000000000000000" +
 		"00000000000000000000000000000000"
 	tmpInt := big.Int{}
 	tmpInt.SetString(targetStr, 16)

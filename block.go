@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/gob"
 	"log"
 	"time"
 )
@@ -35,6 +36,32 @@ func Uint64ToByte(num uint64) []byte {
 		log.Panic(err)
 	}
 	return buffer.Bytes()
+}
+func (block *Block) Serialize() []byte {
+	var buffer bytes.Buffer
+
+	//使用gob进行序列化
+	//定义编码器
+	//使用编器及进行编码
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(block)
+	if err != nil {
+		log.Panic("序列化出错")
+	}
+	return buffer.Bytes()
+}
+
+func DeSerialize(data []byte) Block {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+
+	//使用解码器解码
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic("反序列化出错")
+	}
+	return block
 }
 
 //创建区块
