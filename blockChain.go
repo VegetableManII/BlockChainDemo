@@ -56,19 +56,7 @@ func NewBlockChain() *BlockChain {
 		return nil
 	})
 	return &BlockChain{db, lastHash}
-	//db.View(func(tx *bolt.Tx) error {
-	//	bkt := tx.Bucket([]byte("bucket0"))
-	//	if bkt == nil {
-	//		log.Panic("非法:Bucket内容为空")
-	//	}
-	//	v1 := bkt.Get([]byte("test_1"))
-	//	v2 := bkt.Get([]byte("test_2"))
-	//
-	//	fmt.Printf("取得数据库中的数据 test_1==%s\n", v1)
-	//	fmt.Printf("取得数据库中的数据 test_2==%s", v2)
-	//
-	//	return nil
-	//})
+
 }
 
 //添加区块
