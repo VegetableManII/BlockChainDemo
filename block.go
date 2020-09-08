@@ -25,7 +25,7 @@ type Block struct {
 	//当前块Hash
 	Hash []byte
 	//数据
-	Data []byte
+	Data []*Transaction
 }
 
 //uint64转[]byte
@@ -65,7 +65,7 @@ func DeSerialize(data []byte) Block {
 }
 
 //创建区块
-func NewBlock(data string, preBlock []byte) *Block {
+func NewBlock(txs []*Transaction, preBlock []byte) *Block {
 	block := Block{
 		Version:    00,
 		PreHash:    preBlock,
@@ -74,9 +74,10 @@ func NewBlock(data string, preBlock []byte) *Block {
 		Difficulty: 0, //无效值
 		Nonce:      0,
 		Hash:       []byte{},
-		Data:       []byte(data),
+		Data:       txs,
 	}
 	//block.SetHash()
+	block.MerkelRoot = block.MakeMerkelRoot()
 	pow := NewProoOffWork(&block)
 	hash, nonce := pow.Run()
 	//根据挖矿结果对区块数据进行更新(补充)
@@ -86,8 +87,14 @@ func NewBlock(data string, preBlock []byte) *Block {
 }
 
 //创世块
-func GenesisBlock() *Block {
-	return NewBlock("创世块", []byte{})
+func GenesisBlock(address string) *Block {
+	coinbase := NewCoinBase(address, "创世块")
+	return NewBlock([]*Transaction{coinbase}, []byte{})
+}
+
+func (b *Block) MakeMerkelRoot() []byte {
+	//todo
+	return []byte{}
 }
 
 /*

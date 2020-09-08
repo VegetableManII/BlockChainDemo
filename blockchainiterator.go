@@ -30,10 +30,13 @@ func (it *BlockChainIterator) Next() *Block {
 			log.Panic("非法:Bucket内容为空")
 		}
 		blockTmp := bkt.Get(it.currentHashPointer)
-		//解码
-		block = DeSerialize(blockTmp)
-		it.currentHashPointer = block.PreHash
+		//取出来的数据是空的？
 
+		if blockTmp != nil {
+			//解码
+			block = DeSerialize(blockTmp)
+		}
+		it.currentHashPointer = block.PreHash
 		return nil
 	})
 

@@ -2,7 +2,7 @@ package main
 
 //重构代码
 func main() {
-	var bc = NewBlockChain()
+	var bc = NewBlockChain("User-0")
 	cli := CLI{bc}
 	cli.Run()
 	//bc.AddBlock("转账100万")
