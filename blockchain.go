@@ -1,8 +1,8 @@
 package main
 
 import (
-	"BlockChainDemo/boltdb/bolt"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"log"
 )
 
@@ -85,73 +85,8 @@ func (bc *BlockChain) AddBlock(txs []*Transaction) {
 
 }
 
-func (bc *BlockChain) FindNeedUTXOs(from string, amount float64) (map[string][]int64, float64) {
-	//找到的合理的utxos集合
-	utxos := make(map[string][]int64)
-
-	spentOutputs := make(map[string][]int64)
-	//找到的utxos里面包含的钱的总量
-	var calc float64
-	//TODO
-	it := bc.NewIterator()
-
-	for {
-		//1.遍历区块
-		block := it.Next()
-		//2.遍历交易
-		for _, tx := range block.Data {
-			//3.便利output找到和address相关的utxo（在添加output之前检查是否被消耗过）
-		OUTPUT:
-			for it, output := range tx.TXOutputs {
-				//过滤Output,将所有消耗过的output和当前即将添加的ouput对比一下
-				//相同则跳过，否则添加
-				if spentOutputs[string(tx.TXID)] != nil {
-					for _, j := range spentOutputs[string(tx.TXID)] {
-						if j == int64(it) {
-							continue OUTPUT
-						}
-					}
-				}
-				if output.PubKeyHash == from {
-
-					//比较转账需求
-					if calc < amount {
-						//找到需要的utxo集合
-						//添加input到utxo
-						//统计总额
-						utxos[string(tx.TXID)] = append(utxos[string(tx.TXID)], int64(it))
-						calc += output.Value
-						if calc >= amount {
-							return utxos, calc
-						}
-					}
-					//满足返回utxo和calc
-					//不满足继续循环
-				}
-			}
-			//跳过挖矿交易
-			if !tx.IsCoinbase() {
-				//4.便利input找到address花费过的utxo的集合(把自己消耗过的标记出来)
-				for _, input := range tx.TXInputs {
-					if input.Sig == from {
-						indexArray := spentOutputs[string(input.TXid)]
-						indexArray = append(indexArray, input.Index)
-					}
-				}
-			}
-		}
-		if len(block.PreHash) == 0 {
-			break
-			fmt.Printf("区块遍历完成")
-		}
-	}
-
-	return utxos, calc
-}
-
-//遍历区块查找余额
-func (bc *BlockChain) FindUTXOs(address string) []TXOutput {
-	var UTXO []TXOutput
+func (bc *BlockChain) FindUTXOTransactions(address string) []*Transaction {
+	var txs []*Transaction
 	spentOutputs := make(map[string][]int64)
 
 	it := bc.NewIterator()
@@ -160,15 +95,17 @@ func (bc *BlockChain) FindUTXOs(address string) []TXOutput {
 		//1.遍历区块
 		block := it.Next()
 		//2.遍历交易
-		for _, tx := range block.Data {
-			fmt.Printf("current txid:%x\n", tx.TXID)
+		for i, tx := range block.Data {
+			fmt.Printf("第%d个交易---\n", i)
+			fmt.Printf("-----%v\n", spentOutputs)
 			//3.便利output找到和address相关的utxo（在添加output之前检查是否被消耗过）
 		OUTPUT:
 			for it, output := range tx.TXOutputs {
-				fmt.Printf("current index: %d\n", it)
+				fmt.Printf("\t\t--这个交易的第%d个输出:数额%f值%s\n", it, output.Value, output.PubKeyHash)
 				//过滤Output,将所有消耗过的output和当前即将添加的ouput对比一下
 				//相同则跳过，否则添加
 				if spentOutputs[string(tx.TXID)] != nil {
+
 					for _, j := range spentOutputs[string(tx.TXID)] {
 						if j == int64(it) {
 							continue OUTPUT
@@ -176,16 +113,17 @@ func (bc *BlockChain) FindUTXOs(address string) []TXOutput {
 					}
 				}
 				if output.PubKeyHash == address {
-					UTXO = append(UTXO, output)
+					txs = append(txs, tx)
 				}
 			}
 			//跳过挖矿交易
 			if !tx.IsCoinbase() {
+				fmt.Printf("\t--此交易非挖矿交易\n")
 				//4.便利input找到address花费过的utxo的集合(把自己消耗过的标记出来)
 				for _, input := range tx.TXInputs {
 					if input.Sig == address {
-						indexArray := spentOutputs[string(input.TXid)]
-						indexArray = append(indexArray, input.Index)
+						fmt.Printf("\t--此交易的交易txID：%X, txIndex：%d\n", input.TXid, input.Index)
+						spentOutputs[string(input.TXid)] = append(spentOutputs[string(input.TXid)], input.Index)
 					}
 				}
 			}
@@ -195,5 +133,44 @@ func (bc *BlockChain) FindUTXOs(address string) []TXOutput {
 			fmt.Printf("区块遍历完成")
 		}
 	}
+	return txs
+}
+
+func (bc *BlockChain) FindNeedUTXOs(from string, amount float64) (map[string][]int64, float64) {
+	//找到的合理的utxos集合
+	utxos := make(map[string][]int64)
+	var calc float64
+
+	txs := bc.FindUTXOTransactions(from)
+
+	for _, tx := range txs {
+		for i, output := range tx.TXOutputs {
+			if from == output.PubKeyHash {
+				if calc < amount {
+					utxos[string(tx.TXID)] = append(utxos[string(tx.TXID)], int64(i))
+					calc += output.Value
+					if calc >= amount {
+						return utxos, calc
+					}
+				}
+			}
+		}
+	}
+	return utxos, calc
+}
+
+//遍历区块查找余额
+func (bc *BlockChain) FindUTXOs(address string) []TXOutput {
+	var UTXO []TXOutput
+
+	txs := bc.FindUTXOTransactions(address)
+	for _, tx := range txs {
+		for _, output := range tx.TXOutputs {
+			if output.PubKeyHash == address {
+				UTXO = append(UTXO, output)
+			}
+		}
+	}
+
 	return UTXO
 }

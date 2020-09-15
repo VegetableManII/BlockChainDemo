@@ -64,8 +64,8 @@ func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transactio
 	var inputs []TXInput
 	var outputs []TXOutput
 	//将这些UTXO逐一转成input
-	for id, indexAray := range utxos {
-		for _, i := range indexAray {
+	for id, indexArray := range utxos {
+		for _, i := range indexArray {
 			input := TXInput{
 				[]byte(id),
 				int64(i),
@@ -92,7 +92,7 @@ func (tx *Transaction) IsCoinbase() bool {
 	// input只有一个
 	// id为空
 	// index为-1
-	if len(tx.TXInputs) == 1 && len(tx.TXInputs) == 0 && tx.TXInputs[0].Index == -1 {
+	if len(tx.TXInputs) == 1 && tx.TXInputs[0].TXid == nil && tx.TXInputs[0].Index == -1 {
 		return true
 	}
 	return false

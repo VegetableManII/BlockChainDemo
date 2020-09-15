@@ -1,7 +1,7 @@
 package main
 
 import (
-	"BlockChainDemo/boltdb/bolt"
+	"github.com/boltdb/bolt"
 	"log"
 )
 

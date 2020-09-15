@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"log"
@@ -93,36 +94,15 @@ func GenesisBlock(address string) *Block {
 }
 
 func (b *Block) MakeMerkelRoot() []byte {
-	//todo
-	return []byte{}
-}
+	//梅克尔根的生成
+	//不进行二叉树处理
+	//简单的对交易进行简单的拼接
+	var info []byte
 
-/*
-//生成哈希
-func (block *Block)SetHash()  {
-	//var blockInfo []byte
-	//拼装数据
-	/*
-	blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
-	blockInfo = append(blockInfo, block.PreHash...)
-	blockInfo = append(blockInfo, block.PreHash...)
-	blockInfo = append(blockInfo, block.PreHash...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
-	blockInfo = append(blockInfo, block.Data...)
-
-	tmp := [][]byte{
-		Uint64ToByte(block.Version),
-		block.PreHash,
-		block.MerkelRoot,
-		Uint64ToByte(block.TimeStamp),
-		Uint64ToByte(block.Difficulty),
-		Uint64ToByte(block.Nonce),
-		block.Data,
+	for _, tx := range b.Data {
+		info = append(info, tx.TXID...)
 	}
-	blockInfo := bytes.Join(tmp,[]byte{})
-	//SHA256
-	hash := sha256.Sum256(blockInfo)
-	block.Hash = hash[:]
+
+	hash := sha256.Sum256(info)
+	return hash[:]
 }
-*/

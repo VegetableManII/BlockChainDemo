@@ -64,7 +64,7 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 		//   +1 if x >  y
 		//
 		if tmpInt.Cmp(pow.target) == -1 {
-			fmt.Printf("挖矿成功~ hash:%x nonce:%d\n", hash, nonce)
+			fmt.Printf("挖矿成功~ hash:%X nonce:%d\n", hash, nonce)
 			break
 		} else {
 			nonce++

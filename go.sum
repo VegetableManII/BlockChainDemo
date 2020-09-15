@@ -1,0 +1,8 @@
+github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
+github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
+github.com/btcsuite/golangcrypto v0.0.0-20150304025918-53f62d9b43e8 h1:nOsAWScwueMVk/VLm/dvQQD7DuanyvAUb6B3P3eT274=
+github.com/btcsuite/golangcrypto v0.0.0-20150304025918-53f62d9b43e8/go.mod h1:tYvUd8KLhm/oXvUeSEs2VlLghFjQt9+ZaF9ghH0JNjc=
+github.com/shengdoushi/base58 v1.0.0 h1:tGe4o6TmdXFJWoI31VoSWvuaKxf0Px3gqa3sUWhAxBs=
+github.com/shengdoushi/base58 v1.0.0/go.mod h1:m5uIILfzcKMw6238iWAhP4l3s5+uXyF3+bJKUNhAL9I=
+golang.org/x/sys v0.0.0-20200915084602-288bc346aa39 h1:356XA7ITklAU2//sYkjFeco+dH1bCRD8XCJ9FIEsvo4=
+golang.org/x/sys v0.0.0-20200915084602-288bc346aa39/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
