@@ -9,21 +9,19 @@ import (
 )
 
 type Wallets struct {
-	//map[地址]钱包
+	//map[钱包地址]钱包
 	WalletsMap map[string]*Wallet
 }
+
 func NewWallets() *Wallets {
 	var wallets Wallets
 	wallets.WalletsMap = make(map[string]*Wallet)
-	//ws := loadFile()
 	return &wallets
 }
-
-func (ws *Wallets)CreatWallet() string {
+func (ws *Wallets) CreatWallet() string {
 	wallet := NewWallet()
 	address := wallet.NewAddress()
 
-	//wallets.WalletsMap = make(map[string]*Wallet)
 	ws.WalletsMap[address] = wallet
 	ws.saveToFile()
 	return address
@@ -37,5 +35,5 @@ func (ws *Wallets) saveToFile() {
 	if err != nil {
 		log.Panic(err)
 	}
-	ioutil.WriteFile("./wallets/wallet.dat", buffer.Bytes(), 0600)
+	_ = ioutil.WriteFile("./wallets/wallet.dat", buffer.Bytes(), 0600)
 }

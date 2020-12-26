@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/binary"
 	"encoding/gob"
 	"log"
 	"time"
@@ -29,21 +28,13 @@ type Block struct {
 	Data []*Transaction
 }
 
-//uint64转[]byte
-func Uint64ToByte(num uint64) []byte {
-	var buffer bytes.Buffer
-	err := binary.Write(&buffer, binary.BigEndian, num)
-	if err != nil {
-		log.Panic(err)
-	}
-	return buffer.Bytes()
-}
 func (block *Block) Serialize() []byte {
 	var buffer bytes.Buffer
-
-	//使用gob进行序列化
-	//定义编码器
-	//使用编器及进行编码
+	/*
+		使用gob进行序列化
+		定义编码器
+		使用编码器及进行编码
+	*/
 	encoder := gob.NewEncoder(&buffer)
 	err := encoder.Encode(block)
 	if err != nil {
@@ -52,57 +43,50 @@ func (block *Block) Serialize() []byte {
 	return buffer.Bytes()
 }
 
-func DeSerialize(data []byte) Block {
-	var block Block
-
-	decoder := gob.NewDecoder(bytes.NewReader(data))
-
-	//使用解码器解码
-	err := decoder.Decode(&block)
-	if err != nil {
-		log.Panic("反序列化出错")
+func (b *Block) MakeMerkelRoot() []byte {
+	var info []byte
+	/*
+		梅克尔根的生成
+		不进行二叉树处理
+		简单的对交易进行简单的拼接
+	*/
+	for _, tx := range b.Data {
+		info = append(info, tx.TXID...)
 	}
-	return block
+	hash := sha256.Sum256(info)
+	return hash[:]
 }
 
-//创建区块
+/*创建区块*/
 func NewBlock(txs []*Transaction, preBlock []byte) *Block {
 	block := Block{
-		Version:    00,
-		PreHash:    preBlock,
+		Version:    00,       //版本默认为00
+		PreHash:    preBlock, //前一区块的hash值，创世块的该值为0
 		MerkelRoot: []byte{},
 		TimeStamp:  uint64(time.Now().Unix()),
-		Difficulty: 0, //无效值
-		Nonce:      0,
-		Hash:       []byte{},
-		Data:       txs,
+		Difficulty: 0,        //难度，随着区块链的不断延长难度值会逐渐上升
+		Nonce:      0,        //随机数
+		Hash:       []byte{}, //当前区块的Hash值
+		//这两个值用来表示矿工的工作量证明
+		Data: txs,
 	}
-	//block.SetHash()
 	block.MerkelRoot = block.MakeMerkelRoot()
 	pow := NewProoOffWork(&block)
 	hash, nonce := pow.Run()
-	//根据挖矿结果对区块数据进行更新(补充)
+	//根据挖矿结果对区块数据进行更新
 	block.Hash = hash
 	block.Nonce = nonce
 	return &block
 }
 
 //创世块
+
+/*
+参数即为公钥地址
+每一个区块的产生都要有coinbase即矿工挖矿所产生的的交易
+*/
 func GenesisBlock(address string) *Block {
 	coinbase := NewCoinBase(address, "创世块")
+	//创世块中只有一笔coinbase交易
 	return NewBlock([]*Transaction{coinbase}, []byte{})
-}
-
-func (b *Block) MakeMerkelRoot() []byte {
-	//梅克尔根的生成
-	//不进行二叉树处理
-	//简单的对交易进行简单的拼接
-	var info []byte
-
-	for _, tx := range b.Data {
-		info = append(info, tx.TXID...)
-	}
-
-	hash := sha256.Sum256(info)
-	return hash[:]
 }

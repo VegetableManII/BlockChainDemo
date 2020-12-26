@@ -16,6 +16,11 @@ type Transaction struct {
 	TXInputs  []TXInput  //交易输入数组
 	TXOutputs []TXOutput //交易输出数组
 }
+
+/*
+每一个交易输入都是依据之前的交易来计算的
+解锁脚本？
+*/
 type TXInput struct {
 	//引用的交易ID
 	TXid []byte
@@ -24,6 +29,10 @@ type TXInput struct {
 	//解锁脚本，用地址来模拟
 	Sig string
 }
+
+/*
+每一个交易输出包含基本的转账金额和锁定脚本
+*/
 type TXOutput struct {
 	//转账金额
 	Value float64
@@ -31,31 +40,37 @@ type TXOutput struct {
 	PubKeyHash string
 }
 
-//设置交易ID
+/*设置某笔交易的ID即HASH值*/
 func (tx *Transaction) SetHash() {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
+	/*对交易进行序列化*/
 	err := encoder.Encode(tx)
 	if err != nil {
 		log.Panic(err)
 	}
-
+	/*对交易序列化后的数据内容进行加密*/
 	data := buffer.Bytes()
 	hash := sha256.Sum256(data)
 	tx.TXID = hash[:]
 }
 
-//提供创建交易的方法
+/*
+交易类型分为挖矿交易(coinbase)和普通交易
+挖矿交易的资金由系统奖励获得
+普通交易的资金由之前的交易决定，通过收集之前的交易集合来计算
+账户的余额判断是否可以发生交易
+*/
 
 //创建普通交易
 /*
-1.找到最合理的UTXO集合
+1.找到最合适的UTXO集合
 2.将UTXO逐一转成inputs
 3.创建outputs
 4.有零钱要找零
 */
 func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transaction {
-	//找到合理的UTXO集合
+	//找到合适的UTXO集合
 	utxos, resValue := bc.FindNeedUTXOs(from, amount)
 	if resValue < amount {
 		fmt.Printf("余额不足%f", resValue)
@@ -87,7 +102,13 @@ func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transactio
 	return &tx
 }
 
-//判断是否是挖矿交易
+/*
+判断是否是挖矿交易
+挖矿交易的特征
+交易的输入只有一个
+交易的ID为空
+交易的索引为-1 即挖矿交易是每一个UTXO的第一笔交易
+*/
 func (tx *Transaction) IsCoinbase() bool {
 	// input只有一个
 	// id为空
@@ -103,6 +124,7 @@ func NewCoinBase(address string, data string) *Transaction {
 	input := TXInput{[]byte{}, -1, data}
 	output := TXOutput{reward, address}
 	tx := Transaction{[]byte{}, []TXInput{input}, []TXOutput{output}}
+	//设置创世块中coinbase交易的hash值
 	tx.SetHash()
 	return &tx
 }

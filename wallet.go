@@ -13,23 +13,24 @@ import (
 type Wallet struct {
 	//私钥
 	Private *ecdsa.PrivateKey
-	//公钥
-	//Publick *ecdsa.PublicKey
-	//这里不存储原始公钥而是存储X和Y的凭借字符串
-	//在接收端分割X和Y
+	/*
+		公钥
+		Publick *ecdsa.PublicKey
+		这里不存储原始公钥而是存储X和Y的拼接字符串
+		在接收端分割X和Y
+	*/
 	Public []byte
 }
 
 //创建钱包
 func NewWallet() *Wallet {
-	//创建曲线
+	//创建椭圆曲线
 	curve := elliptic.P256()
 	//生成私钥
 	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		log.Panic("私钥生成失败")
 	}
-
 	//生成公钥
 	pubKeyOrig := privateKey.PublicKey
 	//拼接X,Y
@@ -43,10 +44,8 @@ func NewWallet() *Wallet {
 //生成地址
 func (w *Wallet) NewAddress() string {
 	pubKey := w.Public
-
 	ripHaValue := ripe160HashValue(pubKey)
-
-	version := byte(00)
+	version := byte(0x00)
 	payload := append([]byte{version}, ripHaValue...)
 
 	checkCode := checkSum(payload)
@@ -54,7 +53,6 @@ func (w *Wallet) NewAddress() string {
 	payload = append(payload, checkCode...)
 	myAlphabet := base58.BitcoinAlphabet
 	address := base58.Encode(payload, myAlphabet)
-
 	return address
 }
 func ripe160HashValue(data []byte) []byte {

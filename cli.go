@@ -14,13 +14,13 @@ type CLI struct {
 
 const Usage = `
 	printChain   "print the blockchain"
-	printTransaction --hash HASH "print the transaction details"
+	printTransaction --hash HASH "print the transaction details by hash"
 	getBalance --address ADDRESS "get the balance of address"
 	sendCoin FROM TO AMOUNT MINER DATA "FROM转账AMOUNT给TO由MINER进行挖矿"
 	newWallet  "创建一个钱包"
 `
 
-//接受参数的动作
+/*接受命令行参数的动作*/
 func (cli *CLI) Run() {
 	//得到命令
 	args := os.Args
@@ -38,8 +38,6 @@ func (cli *CLI) Run() {
 		if len(args) == 4 && args[2] == "--hash" {
 			hash := args[3]
 			//根据hash值寻找对应的区块打印这个区块中的交易流水
-			//fmt.Printf("打印交易流水")
-
 			cli.PrintTransactionDetails(hash)
 		} else {
 			fmt.Printf(Usage)
@@ -70,7 +68,5 @@ func (cli *CLI) Run() {
 
 	default:
 		fmt.Printf(Usage)
-
 	}
-	//根据命令控制
 }

@@ -29,7 +29,6 @@ func (cli *CLI) PrintTransactionDetails(hash string) {
 		block := it.Next()
 
 		encodeStr := hex.EncodeToString(block.Hash)
-		//fmt.Printf("当前区块Hash:%s", encodeStr)
 
 		if strings.EqualFold(hash, encodeStr) {
 			txs := block.Data
@@ -39,13 +38,15 @@ func (cli *CLI) PrintTransactionDetails(hash string) {
 					fmt.Printf("\t第%d个交易输入信息:\n", j)
 					fmt.Printf("\t \t引用交易ID:%X\n\t \t引用交易索引:%d\n\t \t签名:%s\n", input.TXid, input.Index, input.Sig)
 				}
-				for k, input := range tx.TXOutputs {
+				for k, output := range tx.TXOutputs {
 					fmt.Printf("\t第%d个交易输出信息:\n", k)
-					fmt.Printf("\t \t交易金额%f\n\t \t收款人%s\n", input.Value, input.PubKeyHash)
+					fmt.Printf("\t \t交易金额%f\n\t \t收款人%s\n", output.Value, output.PubKeyHash)
 				}
 			}
+			break
 		}
 		if len(block.PreHash) == 0 {
+			fmt.Printf("未找到相关的区块信息!!\n")
 			break
 		}
 	}
@@ -71,10 +72,6 @@ func (cli *CLI) Send(from, to string, amount float64, miner, data string) {
 	}
 }
 func (cli *CLI) NewWallet() {
-	//ws := NewWallets()
-	//for address := range ws.WalletsMap {
-	//	fmt.Printf("地址：%s\n", address)
-	//}
 	ws := NewWallets()
 	s := ws.CreatWallet()
 	fmt.Printf("%s\n", s)
