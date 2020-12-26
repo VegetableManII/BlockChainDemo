@@ -43,14 +43,17 @@ func NewWallet() *Wallet {
 
 //生成地址
 func (w *Wallet) NewAddress() string {
+	//对公钥进行hash160运算
 	pubKey := w.Public
 	ripHaValue := ripe160HashValue(pubKey)
+	//拼接一字节的版本号  比特币的钱包地址第一个字节永远为为0
 	version := byte(0x00)
 	payload := append([]byte{version}, ripHaValue...)
-
+	//进行两次hash256运算
 	checkCode := checkSum(payload)
 	//25字节数据
 	payload = append(payload, checkCode...)
+	//最终的结果进行base58编码即可
 	myAlphabet := base58.BitcoinAlphabet
 	address := base58.Encode(payload, myAlphabet)
 	return address
